@@ -1,0 +1,40 @@
+<?php
+
+declare(strict_types=1);
+
+namespace FilamentAdmin\CustomFields\Filament\Integration\Factories;
+
+use Closure;
+use Filament\Tables\Columns\Column;
+use InvalidArgumentException;
+use FilamentAdmin\CustomFields\Enums\CustomFieldsFeature;
+use FilamentAdmin\CustomFields\FeatureSystem\FeatureManager;
+use FilamentAdmin\CustomFields\Models\CustomField;
+
+final class FieldColumnFactory
+{
+    public function create(CustomField $customField): Column
+    {
+        $tableColumnDefinition = $customField->typeData->tableColumn;
+
+        if ($tableColumnDefinition === null) {
+            throw new InvalidArgumentException(sprintf("Field type '%s' does not support table columns.", $customField->type));
+        }
+
+        // Handle inline component (Closure)
+        if ($tableColumnDefinition instanceof Closure) {
+            $column = $tableColumnDefinition($customField);
+        } else {
+            // Handle traditional component class
+            $component = app($tableColumnDefinition);
+            $column    = $component->make($customField);
+        }
+
+        return $column
+            ->toggleable(
+                condition: FeatureManager::isEnabled(CustomFieldsFeature::UI_TOGGLEABLE_COLUMNS),
+                isToggledHiddenByDefault: $customField->settings->list_toggleable_hidden
+            )
+            ->columnSpan($customField->width->getSpanValue());
+    }
+}

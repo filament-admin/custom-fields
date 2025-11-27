@@ -1,0 +1,71 @@
+<?php
+
+declare(strict_types=1);
+
+// ABOUTME: Builder for creating Filament table columns and filters from custom fields
+// ABOUTME: Provides fluent API for generating table components with filtering support
+
+namespace FilamentAdmin\CustomFields\Filament\Integration\Builders;
+
+use Illuminate\Support\Collection;
+use FilamentAdmin\CustomFields\Enums\CustomFieldsFeature;
+use FilamentAdmin\CustomFields\FeatureSystem\FeatureManager;
+use FilamentAdmin\CustomFields\Filament\Integration\Factories\FieldColumnFactory;
+use FilamentAdmin\CustomFields\Filament\Integration\Factories\FieldFilterFactory;
+use FilamentAdmin\CustomFields\Models\CustomField;
+use FilamentAdmin\CustomFields\Services\Visibility\BackendVisibilityService;
+
+final class TableBuilder extends BaseBuilder
+{
+    public function columns(): Collection
+    {
+        if (! FeatureManager::isEnabled(CustomFieldsFeature::UI_TABLE_COLUMNS)) {
+            return collect();
+        }
+
+        $fieldColumnFactory       = app(FieldColumnFactory::class);
+        $backendVisibilityService = app(BackendVisibilityService::class);
+
+        // Get all fields for visibility evaluation
+        $allFields = $this->getFilteredSections()->flatMap(fn (mixed $section): Collection => $section->fields);
+
+        return $this->getFilteredSections()
+            ->flatMap(fn (mixed $section): Collection => $section->fields)
+            ->filter(fn (CustomField $field): bool => $field->typeData->tableColumn !== null)
+            ->map(function (CustomField $field) use ($fieldColumnFactory, $backendVisibilityService, $allFields) {
+                $column = $fieldColumnFactory->create($field);
+
+                if (! method_exists($column, 'formatStateUsing')) {
+                    return $column;
+                }
+
+                // Wrap the existing state with visibility check
+                $column->formatStateUsing(function (mixed $state, mixed $record) use ($field, $backendVisibilityService, $allFields): mixed {
+                    if (! $backendVisibilityService->isFieldVisible($record, $field, $allFields)) {
+                        return null; // Return null or empty value when field should be hidden
+                    }
+
+                    return $state;
+                });
+
+                return $column;
+            })
+            ->values();
+    }
+
+    public function filters(): Collection
+    {
+        if (! FeatureManager::isEnabled(CustomFieldsFeature::UI_TABLE_FILTERS)) {
+            return collect();
+        }
+
+        $fieldFilterFactory = app(FieldFilterFactory::class);
+
+        return $this->getFilteredSections()
+            ->flatMap(fn (mixed $section): Collection => $section->fields)
+            ->filter(fn (CustomField $field): bool => $field->isFilterable() && $field->typeData->tableFilter !== null)
+            ->map(fn (CustomField $field) => $fieldFilterFactory->create($field))
+            ->filter()
+            ->values();
+    }
+}

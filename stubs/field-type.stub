@@ -1,0 +1,63 @@
+<?php
+
+declare(strict_types=1);
+
+namespace {{ namespace }};
+
+use Closure;
+{{ formComponentImport }}
+use Filament\Infolists\Components\TextEntry;
+use Filament\Tables\Columns\TextColumn;
+use FilamentAdmin\CustomFields\Enums\ValidationRule;
+use FilamentAdmin\CustomFields\FieldTypeSystem\BaseFieldType;
+use FilamentAdmin\CustomFields\FieldTypeSystem\FieldTypeConfigurator;
+use FilamentAdmin\CustomFields\Models\CustomField;
+
+/**
+ * {{ fieldLabel }} field type
+ {{ choiceFieldComment }}
+ */
+class {{ class }} extends BaseFieldType
+{
+    public function configure(): FieldTypeConfigurator
+    {
+        return FieldTypeConfigurator::{{ configurator }}
+            ->key('{{ fieldKey }}')
+            ->label('{{ fieldLabel }}')
+            ->icon('heroicon-o-pencil'){{ withoutUserOptions }}
+            ->formComponent($this->getFormComponent())
+            ->tableColumn($this->getTableColumn())
+            ->infolistEntry($this->getInfolistEntry())
+            ->priority(100)
+            ->validationRules([
+                ValidationRule::REQUIRED,
+            ])
+            ->searchable()
+            ->sortable();
+    }
+
+    private function getFormComponent(): Closure
+    {
+        return function (CustomField $customField) {
+            {{ formComponent }}
+        };
+    }
+
+    private function getTableColumn(): Closure
+    {
+        return function (CustomField $customField) {
+            return TextColumn::make($customField->getFieldName())
+                ->label($customField->name)
+                ->sortable()
+                ->searchable();
+        };
+    }
+
+    private function getInfolistEntry(): Closure
+    {
+        return function (CustomField $customField) {
+            return TextEntry::make($customField->getFieldName())
+                ->label($customField->name);
+        };
+    }
+}

@@ -1,0 +1,114 @@
+{
+    "name": "filament-admin/custom-fields",
+    "description": "User Defined Custom Fields for Laravel Filament",
+    "keywords": [
+        "filament-admin",
+        "laravel",
+        "custom-fields",
+        "filament",
+        "dynamic-fields",
+        "form-fields",
+        "eloquent",
+        "admin-panel",
+        "forms",
+        "multi-tenancy",
+        "conditional-fields",
+        "field-builder",
+        "form-builder",
+        "no-migration",
+        "csv-import",
+        "csv-export",
+        "encrypted-fields",
+        "validation",
+        "filamentphp",
+        "laravel-package"
+    ],
+    "homepage": "https://github.com/filament-admin/custom-fields",
+    "support": {
+        "issues": "https://github.com/filament-admin/custom-fields/issues",
+        "source": "https://github.com/filament-admin/custom-fields"
+    },
+    "license": "AGPL-3.0",
+    "authors": [
+        {
+            "name": "eRic",
+            "email": "3664839@qq.com",
+            "role": "Engineer"
+        }
+    ],
+    "require": {
+        "php": "^8.4",
+        "filament/filament": "^4.0",
+        "kirschbaum-development/eloquent-power-joins": "^4.0",
+        "spatie/laravel-package-tools": "^1.15.0",
+        "spatie/laravel-data": "^4.0.0",
+        "postare/blade-mdi": "^1.0"
+    },
+    "require-dev": {
+        "larastan/larastan": "^3.0",
+        "laravel/pint": "^1.0",
+        "nunomaduro/collision": "^8.1",
+        "orchestra/testbench": "^9.0",
+        "pestphp/pest": "^4.0",
+        "pestphp/pest-plugin-arch": "^4.0",
+        "pestphp/pest-plugin-laravel": "^4.0",
+        "pestphp/pest-plugin-livewire": "^4.0",
+        "pestphp/pest-plugin-type-coverage": "^4",
+        "phpstan/phpstan-deprecation-rules": "*",
+        "phpstan/phpstan-phpunit": "^2.0",
+        "rector/rector": "*",
+        "spatie/laravel-ray": "^1.26"
+    },
+    "autoload": {
+        "psr-4": {
+            "FilamentAdmin\\CustomFields\\": "src/",
+            "FilamentAdmin\\CustomFields\\Database\\Factories\\": "database/factories/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "FilamentAdmin\\CustomFields\\Tests\\": "tests/",
+            "FilamentAdmin\\CustomFields\\Tests\\Database\\Factories\\": "tests/database/factories/"
+        }
+    },
+    "scripts": {
+        "post-autoload-dump": "@php ./vendor/bin/testbench package:discover --ansi",
+        "lint": "rector && pint --parallel",
+        "test:lint": "pint --test",
+        "test:refactor": "rector --dry-run",
+        "test:types": "phpstan analyse",
+        "test:arch": "pest --filter=arch",
+        "test:type-coverage": "pest --type-coverage --min=100.0",
+        "test:pest": "pest --parallel",
+        "test": [
+            "@test:lint",
+            "@test:refactor",
+            "@test:types",
+            "@test:type-coverage",
+            "@test:pest"
+        ],
+        "test-coverage": "vendor/bin/pest --coverage"
+    },
+    "bin": [
+        "bin/custom-fields-upgrade"
+    ],
+    "config": {
+        "sort-packages": true,
+        "allow-plugins": {
+            "pestphp/pest-plugin": true,
+            "phpstan/extension-installer": true
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "FilamentAdmin\\CustomFields\\CustomFieldsServiceProvider"
+            ],
+            "aliases": {
+                "CustomFields": "FilamentAdmin\\CustomFields\\Facades\\CustomFields"
+            }
+        }
+    },
+    "minimum-stability": "beta",
+    "prefer-stable": true
+}
